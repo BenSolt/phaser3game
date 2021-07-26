@@ -1,13 +1,16 @@
-import Phaser from 'phaser'
+import Phaser, { Game } from 'phaser'
 
 import ScoreLabel from '../ui/ScoreLabel';
 import BombSpawner from './BombSpawner';
+
+import BulletSpawner from './BulletSpawner';
 
 const GROUND_KEY = 'ground'
 const DUDE_KEY = 'dude'
 const STAR_KEY = 'star'
 const BOMB_KEY = 'bomb'
 
+const BULLET_KEY = 'bomb'
 
 export default class GameScene extends Phaser.Scene {
 
@@ -18,6 +21,7 @@ export default class GameScene extends Phaser.Scene {
         this.scoreLabel = undefined
         this.stars = undefined
         this.bombSpawner = undefined
+        
 
         this.gameOver = false
     }
@@ -28,6 +32,8 @@ export default class GameScene extends Phaser.Scene {
         this.load.image(STAR_KEY, 'assets/star.png')
         this.load.image(BOMB_KEY, 'assets/bomb.png')
 
+        this.load.image(BULLET_KEY, 'assets/bomb.png')
+
         this.load.spritesheet('dude',
             'assets/dude.png',
             { frameWidth: 32, frameHeight: 48 }
@@ -35,20 +41,31 @@ export default class GameScene extends Phaser.Scene {
     }
 
     create() {
-        this.add.image(400, 300, 'sky')
-        this.add.image(400, 300, 'star')
+        this.add.image(200, 100, 'sky')
+        //this.add.image(400, 300, 'sky')
+        //this.add.image(400, 300, 'star')
 
         const platforms = this.createPlatforms()
         this.player = this.createPlayer()
         this.stars = this.createStars()
+
 
         this.scoreLabel = this.createScoreLabel(16, 16, 0)
 
         this.bombSpawner = new BombSpawner(this, BOMB_KEY)
         const bombsGroup = this.bombSpawner.group
 
+    //////////////////////////////
+        this.bulletSpawner = new BulletSpawner(this, BULLET_KEY)
+        const bulletsGroup = this.bulletSpawner.group
+    //////////////////////////
+
         this.physics.add.collider(this.player, platforms)
+        
+        // Stars
         this.physics.add.collider(this.stars, platforms)
+
+        // Bombs
         this.physics.add.collider(bombsGroup, platforms)
         this.physics.add.collider(this.player, bombsGroup, this.hitBomb, null, this)
 
@@ -60,6 +77,10 @@ export default class GameScene extends Phaser.Scene {
     update() {
         if (this.gameOver) {
             return
+        }
+        // SHOOT = spacebar down
+        if (this.cursors.space.isDown) {
+            this.physics.add.collider(this.createBullets(), this.createPlatforms())
         }
 
         if (this.cursors.left.isDown) {
@@ -82,6 +103,18 @@ export default class GameScene extends Phaser.Scene {
             this.player.setVelocityY(-330)
         }
     }
+
+    createBullets(player) {
+
+        const bullets = this.physics.add.group({
+            key: BULLET_KEY,
+            setXY: {x:this.player.x, y: this.player.y}
+        })
+
+        return bullets
+        // this.bulletSpawner.spawn(player.x)
+    }
+
 
 
     hitBomb(player, bomb) {
@@ -107,6 +140,8 @@ export default class GameScene extends Phaser.Scene {
             })
         }
         this.bombSpawner.spawn(player.x)
+        
+        this.bulletSpawner.spawn(player.x)
     }
 
     createScoreLabel(x, y, score) {
@@ -134,14 +169,15 @@ export default class GameScene extends Phaser.Scene {
         return stars
     }
 
-    
-
 
     createPlatforms() {
         const platforms = this.physics.add.staticGroup()
-        platforms.create(400, 568, GROUND_KEY).setScale(2).refreshBody()
+        
+        //Ground floor
+        platforms.create(400, 400, GROUND_KEY).setScale(2).refreshBody()
+        // platforms.create(400, 568, GROUND_KEY).setScale(2).refreshBody()
 
-        platforms.create(600, 400, GROUND_KEY)
+        platforms.create(600, 300, GROUND_KEY)
         platforms.create(50, 250, GROUND_KEY)
         platforms.create(750, 220, GROUND_KEY)
 
@@ -149,7 +185,9 @@ export default class GameScene extends Phaser.Scene {
     }
 
     createPlayer() {
-        const player = this.physics.add.sprite(100, 450, DUDE_KEY)
+        // Location of Player
+        const player = this.physics.add.sprite(100, 300, DUDE_KEY)
+        //const player = this.physics.add.sprite(100, 450, DUDE_KEY)
         player.setBounce(0.2)
         player.setCollideWorldBounds(true)
 
