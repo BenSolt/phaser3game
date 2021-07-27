@@ -3,7 +3,6 @@ import Phaser, { Game } from 'phaser'
 import ScoreLabel from '../ui/ScoreLabel';
 import BombSpawner from './BombSpawner';
 
-import BulletSpawner from './BulletSpawner';
 
 const GROUND_KEY = 'ground'
 const DUDE_KEY = 'dude'
@@ -55,11 +54,6 @@ export default class GameScene extends Phaser.Scene {
         this.bombSpawner = new BombSpawner(this, BOMB_KEY)
         const bombsGroup = this.bombSpawner.group
 
-    //////////////////////////////
-        this.bulletSpawner = new BulletSpawner(this, BULLET_KEY)
-        const bulletsGroup = this.bulletSpawner.group
-    //////////////////////////
-
         this.physics.add.collider(this.player, platforms)
         
         // Stars
@@ -78,11 +72,6 @@ export default class GameScene extends Phaser.Scene {
         if (this.gameOver) {
             return
         }
-        // SHOOT = spacebar down
-        if (this.cursors.space.isDown) {
-            this.physics.add.collider(this.createBullets(), this.createPlatforms())
-        }
-
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-160)
 
@@ -103,18 +92,6 @@ export default class GameScene extends Phaser.Scene {
             this.player.setVelocityY(-330)
         }
     }
-
-    createBullets(player) {
-
-        const bullets = this.physics.add.group({
-            key: BULLET_KEY,
-            setXY: {x:this.player.x, y: this.player.y}
-        })
-
-        return bullets
-        // this.bulletSpawner.spawn(player.x)
-    }
-
 
 
     hitBomb(player, bomb) {
