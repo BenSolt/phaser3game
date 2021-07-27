@@ -3,7 +3,6 @@ import Phaser, { Game } from 'phaser'
 import ScoreLabel from '../ui/ScoreLabel';
 import BombSpawner from './BombSpawner';
 
-
 const GROUND_KEY = 'ground'
 const DUDE_KEY = 'dude'
 const STAR_KEY = 'star'
@@ -117,8 +116,6 @@ export default class GameScene extends Phaser.Scene {
             })
         }
         this.bombSpawner.spawn(player.x)
-        
-        this.bulletSpawner.spawn(player.x)
     }
 
     createScoreLabel(x, y, score) {
